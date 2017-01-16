@@ -1,6 +1,7 @@
-import sys
 import os
+import sys
 from optparse import OptionParser
+
 
 def are_files_duplicates(file_path1, file_path2):
     file_path1_name = os.path.split(file_path1)[1]
@@ -10,12 +11,14 @@ def are_files_duplicates(file_path1, file_path2):
             return True
     return False
 
+
 def list_dirtree(dir_path):
     files = []
     for root, dirname, filenames in os.walk(dir_path):
         for filename in filenames:
             files.append(os.path.join(root, filename))
     return files
+
 
 def find_dublicates(files_list):
     counter = 0
@@ -27,7 +30,8 @@ def find_dublicates(files_list):
                 counter += 1
                 file1 = os.path.split(file_path1)
                 file2 = os.path.split(file_path2)
-                print(u'[!] Найдены одинаковые файлы {} в каталогах:\n {}\n {}\n'.format(file1[1], file1[0], file2[0]))
+                print(u'[!] Найдены одинаковые файлы {} в каталогах: \
+                      \n {}\n {}\n'.format(file1[1], file1[0], file2[0]))
     return counter
 
 
