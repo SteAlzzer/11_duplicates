@@ -1,46 +1,64 @@
+import itertools
 import os
 import sys
 from optparse import OptionParser
 
 
 def are_files_duplicates(file_path1, file_path2):
-    file_path1_name = os.path.split(file_path1)[1]
-    file_path2_name = os.path.split(file_path2)[1]
-    if file_path1_name == file_path2_name:
+    try:
         if os.path.getsize(file_path1) == os.path.getsize(file_path2):
             return True
-    return False
+    except FileNotFoundError as err:
+        if os.name == 'nt':
+            externalpath1 = '\\\\?\\{}'.format(file_path1)
+            externalpath2 = '\\\\?\\{}'.format(file_path2)
+            if os.path.getsize(externalpath1) == os.path.getsize(externalpath2):
+                return True
+        else:
+            print(u'По каким-то причинам не удалось открыть файл. Ошибка: {}'.format(err))
 
 
-def list_dirtree(dir_path):
+def list_dir(dir_path):
     files = []
     for root, dirname, filenames in os.walk(dir_path):
         for filename in filenames:
-            files.append(os.path.join(root, filename))
+            filepath = os.path.join(root, filename)
+            real_filepath = os.path.abspath(os.path.realpath(filepath))
+            files.append(real_filepath)
     return files
 
 
-def find_dublicates(files_list):
-    counter = 0
-    for file_path1 in files_list:
-        for file_path2 in files_list:
-            if file_path1 == file_path2:
-                continue
-            elif are_files_duplicates(file_path1, file_path2):
-                counter += 1
-                file1 = os.path.split(file_path1)
-                file2 = os.path.split(file_path2)
-                print(u'[!] Найдены одинаковые файлы {} в каталогах: \
-                      \n {}\n {}\n'.format(file1[1], file1[0], file2[0]))
-    return counter
+def find_duplicates(files_list):
+    duplicates = []
+    file_dict = {}  # filename: [fullpath,]
+    for filepath in files_list:
+        filename_split = os.path.split(filepath)
+        if filename_split[1] not in file_dict:
+            file_dict[filename_split[1]] = [filename_split[0]]
+        else:
+            file_dict[filename_split[1]].append(filename_split[0])
 
+    for file in file_dict:
+        if len(file_dict[file]) > 1:
+            for couple_of_pathes in itertools.combinations(file_dict[file], 2):
+                if are_files_duplicates(os.path.join(couple_of_pathes[0], file), os.path.join(couple_of_pathes[1], file)):
+                    duplicates.append((file, couple_of_pathes[0], couple_of_pathes[1]))
+    return duplicates
+
+
+def print_duplicates(duplicates):
+    for dup in duplicates:
+        print(u'Идентичный файл [{}] в каталогах:'.format(dup[0]))
+        print(u'>> {}'.format(dup[1]))
+        print(u'>> {}\n'.format(dup[2]))
 
 def main(dir_path):
-    all_files_in_dir = list_dirtree(dir_path)
+    all_files_in_dir = list_dir(dir_path)
     print(u'Найдено {} файлов. Обрабатываем...'.format(len(all_files_in_dir)))
-    counter = find_dublicates(all_files_in_dir)
+    duplicates = find_duplicates(all_files_in_dir)
+    # print_duplicates(duplicates)
     print(u'====')
-    print(u'Всего найдено {} пар одинаковых файлов'.format(counter))
+    print(u'Всего найдено {} пар одинаковых файлов'.format(len(duplicates)))
 
 
 if __name__ == '__main__':
