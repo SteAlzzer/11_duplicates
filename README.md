@@ -1,23 +1,21 @@
 # Anti-Duplicator
 
-Сэкономьте $20 в своём кошельке!
-Бесплатная альтернатива дорогой программе, которая ищет дубликаты файлов.
-Что, ни разу не находил у себя на компе два одинаковых файла с фильмом? Ну тогда проходи мимо.
-А если ты всё же хочешь разобраться в своей помойке, то этот скрипт - специально для тебя!
+Script helps to find identical files in folder.
+Just give to it a folder and find out, how many files have a copy on your computer.
 
-## Как работает:
-Запускаешь через консоль комманду:
-`python duplicates.py путь_до_каталога`.
-И получаешь на выходе перечень одинаковых файлов в виде:
+## How it works:
+Use command line:
+`python duplicates.py path_to_folder`.
+As output:
 ```
 [!] Найдены одинаковые файлы lang.csh в каталогах:
  C:\cygwin\etc\defaults\etc\profile.d
  C:\cygwin\etc\profile.d
 ```
 
-## Мат-чась:
-Два файла считаются идентичными, если совпадает имя файла и их размер в байтах
+## Just FYI:
+Two files are identical if they have __same name__ and __same size__ in bytes.
 
 ## TODO:
-- [ ] - Прикрутить сравнение по контрольным суммам
-- [ ] - Поиск файлов с одинаковыми контрольными суммами, но разными именами
+- [ ] - Add comparison with checksums
+- [ ] - Add search for files with identical checksums, but not names
