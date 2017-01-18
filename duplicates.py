@@ -1,5 +1,8 @@
+#!/usr/bin/python3
 import os
 import sys
+from argparse import ArgumentParser
+from collections import defaultdict
 
 
 def get_file_size(file_path):
@@ -15,8 +18,7 @@ def get_file_size(file_path):
             filesize = os.path.getsize(externalpath)
             return filesize
         else:
-            print('По каким-то причинам не удалось открыть файл. Ошибка: {}'
-                  .format(err))
+            raise  #todo: Проверить на ubuntu
 
 
 def list_dir(dir_path):
@@ -36,25 +38,15 @@ def make_dict_of_files(files_list):
     '''
     Функция составляет словарь из списка файлов
     Ключи словаря - имя файла
-    Значения по ключам - список полных путей каталогов,
+    Значения по ключам - набор полных путей каталогов,
         в котором найден этот файл
-
-    !!!
-    Коментарий проверяющего:
-    >> Алгоритм неоптимален - сравниваешь каждый файл с каждым. Вместо этого используй составной ключ - tuple из имени файла и его размера.
-    Делал так сначала, но наличие функции are_files_duplicates() сбивает столку. Ведь она подразумевает, что нужно сравнивать два файла.
-    Сравниваем по имени и размеру, как говорится в условии.
-    А при использовании составного ключа (filename, size) это как-бы выполняется автоматически.
-    !!!
     '''
-    file_dict = {}  # tuple(filename, size): {fullpath,}
+    file_dict = defaultdict(set)
     for filepath in files_list:
-        filename_split = os.path.split(filepath)
-        filesize = get_file_size(filepath)
-        if (filename_split[1], filesize) not in file_dict:
-            file_dict[(filename_split[1], filesize)] = {filename_split[0]}
-        else:
-            file_dict[(filename_split[1], filesize)].add(filename_split[0])
+        file_dir, file_name = os.path.split(filepath)
+        file_size = get_file_size(filepath)
+        dict_key = (file_name, file_size)
+        file_dict[dict_key].add(file_dir)
     return file_dict
 
 
@@ -63,15 +55,12 @@ def find_duplicates(files_list):
     Функция поиска дубликатов в списке файлов
     Возвращает словарь {filename: {fullpath,}
     '''
-    duplicates = {}
+    keys_to_remove = []
     file_dict = make_dict_of_files(files_list)
-
-    for file, dirpath_list in file_dict.items():
-        if len(dirpath_list) > 1:
-            if file not in duplicates:
-                duplicates[file] = set(dirpath_list)
-
-    return duplicates
+    keys_to_remove = [f for f, s in file_dict.items() if len(s) == 1]
+    for key in keys_to_remove:
+        del file_dict[key]
+    return file_dict
 
 
 def print_duplicates(duplicates):
@@ -95,11 +84,11 @@ def main(dir_path):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print('Необходимо передать путь к директории. Попробуй ещё раз')
-        sys.exit(-1)
+    parser = ArgumentParser(description='Finds duplicates in folder')
+    parser.add_argument('path_to_dir', help='an integer for the accumulator')
+    args = parser.parse_args()
 
-    dir_path = os.path.abspath(os.path.realpath(sys.argv[1]))
+    dir_path = os.path.abspath(os.path.realpath(args.path_to_dir))
     if not os.path.isdir(dir_path):
         print('Такой папки не существует: {}. Попробуй ещё раз'.format(dir_path))
         sys.exit(-1)
