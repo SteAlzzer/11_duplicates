@@ -85,7 +85,7 @@ def main(dir_path):
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Finds duplicates in folder')
-    parser.add_argument('path_to_dir', help='an integer for the accumulator')
+    parser.add_argument('path_to_dir', help='Path to folder')
     args = parser.parse_args()
 
     dir_path = os.path.abspath(os.path.realpath(args.path_to_dir))
